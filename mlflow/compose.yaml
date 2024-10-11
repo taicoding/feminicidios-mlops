@@ -1,0 +1,65 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.2
+    environment:
+      BACKEND_STORE_URI: postgresql://mlflow_user:yourpassword@db/mlflow_db
+      ARTIFACT_ROOT: s3://mlflow-artifacts
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio123
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+    volumes:
+      - mlflowdata:/mlflow
+    expose:
+      - "5000"
+    depends_on:
+      - db
+      - minio
+    command: mlflow server --backend-store-uri ${BACKEND_STORE_URI} --default-artifact-root ${ARTIFACT_ROOT} --host 0.0.0.0
+    networks:
+      - web
+
+  db:
+    image: postgres:12
+    environment:
+      POSTGRES_USER: mlflow_user
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: mlflow_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - web
+
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data
+    ports:
+      - "9000:9000"
+    volumes:
+      - miniodata:/data
+    networks:
+      - web
+      
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./../nginx/web.mlflow.conf:/etc/nginx/conf.d/web.mlflow.conf
+      - ./../nginx/.htpasswd:/etc/nginx/.htpasswd
+    depends_on:
+      - mlflow
+    networks:
+      - web
+
+      
+volumes:
+  pgdata:
+  miniodata:
+  mlflowdata:
+
+networks:
+  web:
+    external: true

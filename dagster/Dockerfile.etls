@@ -1,0 +1,35 @@
+FROM python:3.10-slim
+
+RUN apt-get update
+RUN apt-get install -y gnupg curl git
+RUN curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
+    gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
+    --dearmor
+RUN echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] http://repo.mongodb.org/apt/debian bullseye/mongodb-org/7.0 main" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+RUN apt-get update
+RUN apt-get install -y mongodb-org-tools
+
+ENV DAGSTER_HOME=/opt/dagster/dagster_home
+RUN mkdir -p $DAGSTER_HOME
+COPY dagster.yaml $DAGSTER_HOME
+
+WORKDIR /opt/dagster/app
+
+COPY requirements.txt /opt/dagster/app/requirements.txt
+RUN pip install -r requirements.txt
+
+COPY etls /opt/dagster/app/etls
+COPY setup.py /opt/dagster/app/setup.py
+COPY setup.cfg /opt/dagster/app/setup.cfg
+COPY pyproject.toml /opt/dagster/app/pyproject.toml
+COPY .env.docker /opt/dagster/app/.env
+COPY mongo.config.yaml /opt/dagster/app/mongo.config.yaml
+
+
+# Run dagster gRPC server on port 4000
+
+EXPOSE 4000
+
+# CMD allows this to be overridden from run launchers or executors that want
+# to run other commands against your repository
+CMD ["dagster", "api", "grpc", "-h", "0.0.0.0", "-p", "4000", "-m", "etls"]

@@ -1,0 +1,6 @@
+load_from:
+  # Each entry here corresponds to a service in the docker-compose file that exposes user etls.
+  - grpc_server:
+      host: dagster_etls
+      port: 4000
+      location_name: "etls"
