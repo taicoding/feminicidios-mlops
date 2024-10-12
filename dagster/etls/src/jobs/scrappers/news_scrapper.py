@@ -1,19 +1,22 @@
-from datetime import datetime
 from dagster import AutoMaterializePolicy, FreshnessPolicy, asset, get_dagster_logger
+from bson import ObjectId
+from etls.src.spiders.eldeber_spider import ElDeberSpider
+from scrapy.crawler import CrawlerProcess
 
 logger = get_dagster_logger()
 
-
 @asset(
-    freshness_policy=FreshnessPolicy(maximum_lag_minutes=60 * 24 * 90),
     auto_materialize_policy=AutoMaterializePolicy.eager(),
 )
-def pipeline_cluster():
-    logger.info(f"Running pipeline_cluster at {datetime.now()} 😂")
-
+def news_scrapper():
+    
+    process = CrawlerProcess()
+    process.crawl(ElDeberSpider)
+    process.start()
 
 if __name__ == "__main__":
     try:
-        pipeline_cluster()
+        news_scrapper()
     except Exception as e:
         logger.error(e)
+    
