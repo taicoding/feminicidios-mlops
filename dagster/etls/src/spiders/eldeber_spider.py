@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 from etls.src.jobs.mongodb_client import MongoDBClient
 
-mongo_uri = os.getenv("MONGODB_URI")
+mongo_uri = os.getenv("MONGO_DB_URI")
 db_name = os.getenv("DB_NAME")
 collection = os.getenv("COLLECTION_NAME")
 

@@ -1,6 +1,7 @@
 from dagster import AutoMaterializePolicy, FreshnessPolicy, asset, get_dagster_logger
 from bson import ObjectId
 from etls.src.spiders.eldeber_spider import ElDeberSpider
+from etls.src.spiders.eldiario_spider import ElDiarioSpider
 from scrapy.crawler import CrawlerProcess
 
 logger = get_dagster_logger()
@@ -12,6 +13,7 @@ def news_scrapper():
     
     process = CrawlerProcess()
     process.crawl(ElDeberSpider)
+    process.crawl(ElDiarioSpider)
     process.start()
 
 if __name__ == "__main__":
