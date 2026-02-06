@@ -129,6 +129,6 @@ watchfiles==0.20.0
 wcwidth==0.2.6
 websocket-client==1.6.4
 websockets==11.0.3
-Werkzeug==3.0.1
+Werkzeug==3.1.5
 yarl==1.9.2
 scrapy==2.11.2
